@@ -1,6 +1,7 @@
 {
     "name": "shophy/miniprogram",
     "description": "miniprogram-php-sdk",
+    "license": "MIT",
     "authors": [
         {
             "name": "shophy",

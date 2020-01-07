@@ -1,0 +1,14 @@
+{
+    "name": "shophy/miniprogram",
+    "description": "miniprogram-php-sdk",
+    "authors": [
+        {
+            "name": "shophy",
+            "email": "shophy@kuningkeji.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": { "shophy\\miniprogram\\": "src" }
+    },
+    "require": {}
+}

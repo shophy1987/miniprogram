@@ -33,11 +33,12 @@ class Api
 	    $result = $this->http_get(self::BASE_URL.self::JSCODETOSESSION.'appid='.$this->appid.'&secret='.$this->secret.'&js_code='.$code.'&grant_type=authorization_code');
 	    if ($result) {
 	        $json = json_decode($result, true);
-	        if (!$json || intval($json['errcode']) !== 0) {
-	            $this->errCode = $json['errcode'];
+	        if (!$json)	return false;
+			if (isset($json['errcode']) && intval($json['errcode']) !== 0) {
+				$this->errCode = $json['errcode'];
 	            $this->errMsg = $json['errmsg'];
 	            return false;
-            }
+			}
             
 	        return $json;
         }

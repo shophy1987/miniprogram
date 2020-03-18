@@ -36,7 +36,9 @@ class Api
     public function getSessionByCode($code)
     {
 		Utils::checkNotEmptyStr($code, 'code');
-		self::_HttpCall(self::JSCODETOSESSION, 'GET', array('appid' => $this->appid, 'secret' => $this->secret, 'js_code' => $code, 'grant_type' => 'authorization_code'));
+        self::_HttpCall(self::JSCODETOSESSION, 'GET', array('appid' => $this->appid, 'secret' => $this->secret, 'js_code' => $code, 'grant_type' => 'authorization_code'));
+        
+        isset($this->rspJson['session_key']) && $this->setCache($this->appid.'-sessionKey', $this->rspJson['session_key']);
 	}
 
 	/**
@@ -58,19 +60,19 @@ class Api
     }
 
 	/**
-     * @brief GetAccessToken : 获取 accesstoken，不用主动调用
+     * @brief getAccessToken : 获取 accesstoken，不用主动调用
      *
      * @return : string accessToken
      */
-    public function GetAccessToken()
+    public function getAccessToken()
     {
         if ( ! Utils::notEmptyStr($this->accessToken)) { 
-            $this->RefreshAccessToken();
+            $this->refreshAccessToken();
         } 
         return $this->accessToken;
     }
 
-    protected function RefreshAccessToken($bflush=false)
+    protected function refreshAccessToken($bflush=false)
     {
         if (!Utils::notEmptyStr($this->appid) || !Utils::notEmptyStr($this->secret))
             throw new ParameterException("invalid appid or secret");
@@ -86,7 +88,14 @@ class Api
 			$this->accessToken = $this->rspJson["access_token"];
 			$this->setCache($this->appid, $this->accessToken, $this->rspJson['expires_in']);
         }
-	}
+    }
+    
+    public function getSessionKey()
+    {
+        if ( ! Utils::notEmptyStr($this->sessionKey)) { 
+            $this->sessionKey = $this->getCache($this->appid.'-sessionKey');
+        }
+    }
 	
 	/**
      * 检验数据的真实性，并且获取解密后的明文
@@ -98,6 +107,7 @@ class Api
      */
     public function decryptData($encryptedData, $iv, &$data )
     {
+        $this->getSessionKey();
 		if (!Utils::notEmptyStr($this->sessionKey) || strlen($this->sessionKey) != 24) {
 			throw new ParameterException("invalid sessionKey");
 		}
@@ -191,7 +201,7 @@ class Api
             $realUrl = $url;
 
             if (strpos($url, "ACCESS_TOKEN")) {
-                $token = $this->GetAccessToken();
+                $token = $this->getAccessToken();
                 $realUrl = str_replace("ACCESS_TOKEN", $token, $url);
                 $tokenType = "ACCESS_TOKEN";
             } else { 
@@ -208,7 +218,7 @@ class Api
                 if ($errCode == 40014 || $errCode == 41001 || $errCode == 42001) { // token expired
                     if ("NO_TOKEN" != $tokenType && true == $refreshTokenWhenExpired) {
                         if ("ACCESS_TOKEN" == $tokenType) { 
-                            $this->RefreshAccessToken(true);
+                            $this->refreshAccessToken(true);
                         }
                         $retryCnt += 1;
                         continue;
@@ -235,7 +245,7 @@ class Api
             $realUrl = $url;
 
     		if (strpos($url, "ACCESS_TOKEN")) {
-                $token = $this->GetAccessToken();
+                $token = $this->getAccessToken();
                 $realUrl = str_replace("ACCESS_TOKEN", $token, $url);
                 $tokenType = "ACCESS_TOKEN";
             } else { 
@@ -253,7 +263,7 @@ class Api
             if ($errCode == 40014 || $errCode == 41001 || $errCode == 42001) { // token expired
                 if ("NO_TOKEN" != $tokenType && true == $refreshTokenWhenExpired) {
                     if ("ACCESS_TOKEN" == $tokenType) { 
-                        $this->RefreshAccessToken(true);
+                        $this->refreshAccessToken(true);
                     }
                     $retryCnt += 1;
                     continue;

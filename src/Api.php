@@ -3,6 +3,7 @@
 namespace shophy\miniprogram;
 
 use shophy\miniprogram\common\Utils;
+use shophy\miniprogram\common\HttpUtils;
 use shophy\miniprogram\exception\ApiException;
 use shophy\miniprogram\exception\InternalException;
 use shophy\miniprogram\exception\ParameterException;
@@ -140,7 +141,7 @@ class Api
 	 * @param int $expired
 	 * @return boolean
 	 */
-	protected function setCache($cachename,$value,$expired){
+	protected function setCache($cachename,$value,$expired=null){
 		//TODO: set cache implementation
 		//return Yii::$app->cache->set($cachename, $value, $expired);
 	}

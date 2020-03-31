@@ -39,7 +39,9 @@ class Api
 		Utils::checkNotEmptyStr($code, 'code');
         self::_HttpCall(self::JSCODETOSESSION, 'GET', array('appid' => $this->appid, 'secret' => $this->secret, 'js_code' => $code, 'grant_type' => 'authorization_code'));
         
-        isset($this->rspJson['session_key']) && $this->setCache($this->appid.'-sessionKey', $this->rspJson['session_key']);
+        if (isset($this->rspJson['openid'], $this->rspJson['session_key'])) {
+            $this->setCache($this->rspJson['openid'].'SessionKey', $this->rspJson['session_key']);
+        }
 	}
 
 	/**

@@ -19,7 +19,6 @@ class Api
 	
     protected $appid = null;
 	protected $secret = null;
-	protected $sessionKey = null;
     protected $accessToken = null;
 
 	public function __construct($appid, $secret)
@@ -93,25 +92,24 @@ class Api
         }
     }
     
-    public function getSessionKey()
+    public function getSessionKey($openid)
     {
-        if ( ! Utils::notEmptyStr($this->sessionKey)) { 
-            $this->sessionKey = $this->getCache($this->appid.'-sessionKey');
-        }
+        return $this->getCache($openid.'SessionKey');
     }
 	
 	/**
      * 检验数据的真实性，并且获取解密后的明文
      * @param $encryptedData string 加密的用户数据
      * @param $iv string 与用户数据一同返回的初始向量
+     * @param $openid string 用户的openid
      * @param $data string 解密后的原文
      *
      * @return int 成功0，失败返回对应的错误信息
      */
-    public function decryptData($encryptedData, $iv, &$data )
+    public function decryptData($encryptedData, $iv, $openid, &$data)
     {
-        $this->getSessionKey();
-		if (!Utils::notEmptyStr($this->sessionKey) || strlen($this->sessionKey) != 24) {
+        $sessionKey = $this->getSessionKey($openid);
+		if (!Utils::notEmptyStr($sessionKey) || strlen($sessionKey) != 24) {
 			throw new ParameterException("invalid sessionKey");
 		}
 		if (!Utils::notEmptyStr($iv) || strlen($iv) != 24) {
@@ -119,17 +117,15 @@ class Api
 		}
 
 		$aesIV = base64_decode($iv);
-		$aesKey = base64_decode($this->sessionKey);
+		$aesKey = base64_decode($sessionKey);
 		$aesCipher = base64_decode($encryptedData);
 
 		$result = openssl_decrypt($aesCipher, "AES-128-CBC", $aesKey, 1, $aesIV);
 		$dataObj = json_decode( $result );
-		if( $dataObj  == NULL )
-		{
+		if ($dataObj  == NULL) {
 			throw new InternalException("decrypt failed");
 		}
-		if( $dataObj->watermark->appid != $this->appid )
-		{
+		if ($dataObj->watermark->appid != $this->appid) {
 			throw new InternalException("invalid decrypt data");
 		}
 

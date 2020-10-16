@@ -10,6 +10,7 @@ use shophy\miniprogram\exception\ParameterException;
 
 class Api
 {
+    const BASE_URL = 'https://api.weixin.qq.com';
 	const GET_ACCESSTOKEN = '/cgi-bin/token'; // 接口调用凭证
 	const JSCODETOSESSION = '/sns/jscode2session'; // 登录凭证校验
 	const MESSAGE_SUBSCRIBE_SEND = '/cgi-bin/message/subscribe/send?access_token=ACCESS_TOKEN'; // 发送订阅消息
